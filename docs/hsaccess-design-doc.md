@@ -64,6 +64,7 @@ Integrating HSAccess essentially involves redefining all of the operations that 
     __edit_users = models.ManyToManyField(...)
     
     def add_edit_user(user):
+      # notice that the non-ORM interface is still implemented with ORM. 
       if not self.__edit_users.filter(pk=user.pk).exists():
         self.__edit_users.add(user)
   
