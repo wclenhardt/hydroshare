@@ -63,6 +63,8 @@ Integrating HSAccess essentially involves redefining all of the operations that 
     # edit_users is now PRIVATE
     __edit_users = models.ManyToManyField(...)
     
+    # grants the user edit access on this resource if
+    # the user does not already have edit access
     def add_edit_user(user):
       # notice that the non-ORM interface is still implemented with ORM. 
       if not self.__edit_users.filter(pk=user.pk).exists():
