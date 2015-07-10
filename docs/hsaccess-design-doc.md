@@ -83,6 +83,7 @@ Refactor the implementations of `resource.py` and `users.py` to now update Djang
 ### An example:
 
 ```python
+  # this is the ONLY WAY to create a user in HS
   def create_user(....):
     
     # puts the user in HSAccess, throwing exceptions on fail
