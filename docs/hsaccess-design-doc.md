@@ -71,7 +71,12 @@ Integrating HSAccess essentially involves redefining all of the operations that 
   res.add_edit_user(user)
 ```
 
-## 3. `resource.py` and `users.py` 
+## 3. Trim `HSLib.py`
+`HSLib.py` is the python wrapper around the HSAccess sql tables, and`HSLib.py` exposes more functionality than is currently used. For example, two-step joining of groups (invite, then accept). This functionality is confusing and adds complexity before we are ready for it. Integrating HSAccess now is about developing solid patterns that we can build on later to migrate more functionality to HSAccess over time. Therefore, I propose shaking unused code paths from `HSLib` for the first integration, to keep the interface minimal. Once we as a team get experience using HSAccess through `HSLib` we can add back in the extra complexity.
+
+Similarly, HSAccess also stores some extra data (like the title of the resource, for example). We need to be very careful that every piece of data HSLib asks for is warrented, as the simpler the system is the easier it will be to integrate.
+
+## 4. `resource.py` and `users.py` 
 Refactor the implementations of `resource.py` and `users.py` to now update Django, but also update HSAccess. Note that Django and HSAccess do not have identical interfaces, so the two pieces of code will not necessarily look identical, although they will achieve the same net effect (ex: share a resource with a user, or create a new account, etc).
 
 ### An example:
@@ -93,3 +98,6 @@ Refactor the implementations of `resource.py` and `users.py` to now update Djang
     except Exception:
       # handle exception as necessary
 ```
+
+### 5. Tests
+Write tests that perform operations and then assert that they were reflected in both HSAccess and Django. This helps us identify when we have successfully integrated HSAccess.
