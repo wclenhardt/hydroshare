@@ -115,3 +115,5 @@ Some other refactors I thought of along the way that are not strictly necessary 
 2. Make a new module called `server` which contains the code for the Django webapp, including all of the views, forms, etc. This layer implements the REST API by invoking functions in `hs_core`.
 
 The goal of these changes is to build a more explicitly layered architecture, where the capabilities, boundaries, and limitations of each layer are clear. 
+
+3. Remove `ga_resources` and `ga_ows`. Complexity is the enemy.
