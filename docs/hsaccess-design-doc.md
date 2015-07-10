@@ -72,6 +72,8 @@ Integrating HSAccess essentially involves redefining all of the operations that 
   res.add_edit_user(user)
 ```
 
+To find all of the direct manipulations of `{view,edit}_{groups,users}`, use `grep`. 
+
 ## 3. Trim `HSLib.py`
 `HSLib.py` is the python wrapper around the HSAccess sql tables, and`HSLib.py` exposes more functionality than is currently used. For example, two-step joining of groups (invite, then accept). This functionality is confusing and adds complexity before we are ready for it. Integrating HSAccess now is about developing solid patterns that we can build on later to migrate more functionality to HSAccess over time. Therefore, I propose shaking unused code paths from `HSLib` for the first integration, to keep the interface minimal. Once we as a team get experience using HSAccess through `HSLib` we can add back in the extra complexity.
 
