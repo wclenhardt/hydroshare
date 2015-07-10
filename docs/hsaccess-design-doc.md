@@ -107,7 +107,7 @@ Write tests that perform operations and then assert that they were reflected in 
 ## Additional/Misc Refactors
 Some other refactors I thought of along the way that are not strictly necessary for HSAccess:
 
-1. Make `hs_core/hydroshare` into `hs_core`, which is responsible for all operations on the HS database.
-2. Make a new module called something like `django` or `server` which contains the code for handling and responding to HTTP and API requests. It is a thin layer on top of `hs_core` that more or less just decides which `hs_core` functions to call, and with which parameters. This makes the division between data-changing operations (which is the logical heart of Hydroshare), and the web server (which just provides a way to invoke those functions from the client).
+1. Simplify `hs_core` so it just exposes functions to manipulate the HS database.
+2. Make a new module called `server` which contains the code for the Django webapp, including all of the views, forms, etc. This layer implements the REST API by invoking functions in `hs_core`.
 
 The goal of these changes is to build a more explicitly layered architecture, where the capabilities, boundaries, and limitations of each layer are clear. 
