@@ -111,7 +111,7 @@ Write tests that perform operations and then assert that they were reflected in 
 
 ## Summary
 
-In summary, I am pushing for a clearly layered architecture. I imagine the following layers, from lowest-level at the top to highest level at the bottom:
+In summary, I am pushing for an architecture with a clear division into layers, each with its own responsibilities. I imagine the following layers, from lowest-level at the top to highest level at the bottom:
 
 1. SQL
 2. User/Resource/Metadata/etc classes w/ ORM mapping to SQL
