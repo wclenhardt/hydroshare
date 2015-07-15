@@ -39,7 +39,7 @@ b. No ORM:
 ```python
   res.add_edit_user(user)
 ```
-The second has many advantages over the first. First, we *cannot* forget to check if the user already has edit permissions because `add_edit_user` does it every time. But more importantly, the second helps us integrate HSAccess because it allows us to change what it means to add an editor.
+The second has many advantages over the first. First, we *cannot* forget to check if the user already has edit permissions because it is/will be the first step of the implmentation of `add_edit_user`. But more importantly, the second helps us integrate HSAccess because it provides a single point of truth for what it means to add an editing user, which makes it trivial to expand that definition to include some notion of `HSAccess`.
 
 Integrating HSAccess essentially involves redefining all of the operations that need to be mirrored, so it would help a lot to refactor the code that performs those operations to all invoke methods that hide the implementation. The most important place to start is to remove all uses of the permissions variables: `edit_users`, `edit_groups,` `view_users`, and `view_groups`. Replace all manipulations of those variables with methods on the `ResourcePermissionMixin` that provide the same functionality.
 
@@ -77,7 +77,7 @@ Integrating HSAccess essentially involves redefining all of the operations that 
 To find all of the direct manipulations of `{view,edit}_{groups,users}`, use `grep`. 
 
 ## 3. Trim `HSLib.py`
-`HSLib.py` is the python wrapper around the HSAccess sql tables, and`HSLib.py` exposes more functionality than is currently used. For example, two-step joining of groups (invite, then accept). This functionality is confusing and adds complexity before we are ready for it. Integrating HSAccess now is about developing solid patterns that we can build on later to migrate more functionality to HSAccess over time. Therefore, I propose shaking unused code paths from `HSLib` for the first integration, to keep the interface minimal. Once we as a team get experience using HSAccess through `HSLib` we can add back in the extra complexity.
+`HSLib.py` is the python wrapper around the HSAccess sql tables, and`HSLib.py` exposes more functionality than is currently used. For example, two-step joining of groups, where a user if first invited to the group, but is only considered a member once they accept. This feature is currently unused, and so having HSLib.py expose functionality for it adds complexity without benefit. The first pass of HSAccess integration is about developing solid patterns that we can build on later to migrate more functionality to HSAccess over time. Therefore, I propose shaking unused code paths from `HSLib` for the first integration, to keep the interface minimal. Once we as a team get experience using HSAccess through `HSLib` we can add back in the extra complexity.
 
 Similarly, HSAccess also stores some extra data (like the title of the resource, for example). We need to be very careful that every piece of data HSLib asks for is warrented, as the simpler the system is the easier it will be to integrate.
 
@@ -107,6 +107,19 @@ Refactor the implementations of `resource.py` and `users.py` to now update Djang
 
 ### 5. Tests
 Write tests that perform operations and then assert that they were reflected in both HSAccess and Django. This helps us identify when we have successfully integrated HSAccess.
+
+
+## Summary
+
+In summary, I am pushing for a clearly layered architecture. I imagine the following layers, from lowest-level at the top to highest level at the bottom:
+
+1. SQL
+2. User/Resource/Metadata/etc classes w/ ORM mapping to SQL
+3. `hs_core/hydroshare`, which is the single point of truth for all operations on Hydroshare data.
+4. Handler functions that unpack the HTTP request and invoke a function from `hs_core/hydroshare` with the appropriate parameters and handle all exceptions.
+5. Django mapping URLs to handler functions
+
+With this architecture it is clear that only layers 1 & 2 can change Django data, and layer 3 also calls methods to mutate HSAccess.
 
 ## Additional/Misc Refactors
 Some other refactors I thought of along the way that are not strictly necessary for HSAccess:
