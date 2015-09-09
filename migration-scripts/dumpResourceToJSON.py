@@ -1,5 +1,6 @@
 import os
 
+os.environ.setdefault("PYTHONPATH", '/home/docker/hydroshare')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'hydroshare.settings'
 
 import django
@@ -25,7 +26,7 @@ refts_res_objs = list(RefTimeSeries.objects.all())
 tool_res_objs = list(ToolResource.objects.all())
 
 all_objs = generic_res_objs + netcdf_res_objs + raster_res_objs + timeseries_res_objs + mi_res_objs + mp_res_objs + refts_res_objs + tool_res_objs
-data = serializers.serialize("json", all_objs, fields=('short_id', 'public', 'comments_count', 'rating_count', 'rating_average', 'rating_sum', 'user', 'creator', 'owners', 'view_users', 'edit_users'))
+data = serializers.serialize("json", all_objs, fields=('short_id', 'public', 'comments_count', 'rating_count', 'rating_average', 'rating_sum', 'user', 'creator', 'owners', 'view_users', 'edit_users'), indent=4)
 out = open("resources.json", "w")
 
 out.write(data)

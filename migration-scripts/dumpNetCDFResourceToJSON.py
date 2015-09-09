@@ -7,7 +7,7 @@ from django.core import serializers
 from hs_app_netCDF.models import NetcdfResource 
 
 django.setup()
-data = serializers.serialize("json", NetcdfResource.objects.all(), fields=('short_id', 'public', 'comments_count', 'rating_count', 'rating_average', 'rating_sum', 'user', 'creator', 'owners', 'view_users', 'edit_users'))
+data = serializers.serialize("json", NetcdfResource.objects.all(), fields=('short_id', 'public', 'comments_count', 'rating_count', 'rating_average', 'rating_sum', 'user', 'creator', 'owners', 'view_users', 'edit_users'), indent=4)
 out = open("netcdfresource.json", "w")
 out.write(data)
 out.close()
