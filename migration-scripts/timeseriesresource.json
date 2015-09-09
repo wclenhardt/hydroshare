@@ -1,0 +1,1 @@
+[{"fields": {"owners": [10], "view_users": [], "short_id": "1a25b11fa1354773b6edb9495e754f4e", "creator": 10, "rating_average": 0.0, "rating_sum": 0, "rating_count": 0, "comments_count": 0, "user": 10, "edit_users": [], "public": true}, "model": "hs_app_timeseries.timeseriesresource", "pk": 51}]
