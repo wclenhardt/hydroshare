@@ -5,11 +5,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hydroshare.settings")
 
 import django
 from django.core import serializers
-from django.contrib.comments.models import Comment
+from mezzanine.generic.models import Rating
 
 django.setup()
-data = serializers.serialize("json", Comment.objects.all(), indent=4, use_natural_foreign_keys=True, use_natural_primary_keys=True)
-out = open("comments.json", "w")
+data = serializers.serialize("json", Rating.objects.all(), indent=4, use_natural_foreign_keys=True, use_natural_primary_keys=True)
+out = open("rating.json", "w")
 
 out.write(data)
 out.close()
