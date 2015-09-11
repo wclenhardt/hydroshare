@@ -18,8 +18,8 @@ class MySerializer(Serializer):
 
         self.stream = options.pop("stream", six.StringIO())
         self.selected_fields = options.pop("fields", None)
-        self.use_natural_foreign_keys = options.pop('use_natural_foreign_keys', False)
-        self.use_natural_primary_keys = options.pop('use_natural_primary_keys', False)
+        self.use_natural_foreign_keys = options.pop('use_natural_foreign_keys', True)
+        self.use_natural_primary_keys = options.pop('use_natural_primary_keys', True)
 
         self.start_serialization()
         self.first = True
@@ -34,8 +34,17 @@ class MySerializer(Serializer):
                         if self.selected_fields is None or field.attname in self.selected_fields:
                             self.handle_field(obj, field)
                     else:
+                        #print field.attname + ", " + field.get_internal_type()
                         if self.selected_fields is None or field.attname[:-3] in self.selected_fields:
-                            self.handle_fk_field(obj, field)
+                            if self.use_natural_foreign_keys and field.get_internal_type()=='ForeignKey' and hasattr(field.rel.to, 'natural_key'):
+                                related = getattr(obj, field.name)
+                                if related:
+                                    value = related.natural_key()
+                                else:
+                                    value = None
+                            else:
+                                value = getattr(obj, field.get_attname())
+                            self._current[field.name] = value
             for field in concrete_model._meta.many_to_many:
                 if field.serialize:
                     if self.selected_fields is None or field.attname in self.selected_fields:
@@ -48,7 +57,6 @@ class MySerializer(Serializer):
 
 django.setup()
 myserializer = MySerializer()
-#all_objs = list(ThreadedComment.objects.all())+list(Comment.objects.all())
 all_objs = list(ThreadedComment.objects.all())
 data = myserializer.serialize(all_objs, indent=4)
 out = open("threaded_comments.json", "w")
