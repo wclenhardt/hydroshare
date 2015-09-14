@@ -1,6 +1,7 @@
 # usage: python loadCommentsFromJSON.py comments.JSON resources.JSON new_resources.JSON
 # where resources.JSON is used to find mapping from object_pk to short_id and
 # new_resources.JSON is used to find mapping from short_id to object_pk for new resources
+# Author: Hong Yi
 import os
 import sys
 import json

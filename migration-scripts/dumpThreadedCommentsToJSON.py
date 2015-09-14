@@ -1,3 +1,8 @@
+# This script dumps HydroShare ThreadedComment table into threaded_comments.json to be used to  
+# ingest the threaded_comments data back into new system for manual migration purpose.
+# Since Django's Serializer class cannot handle class inheritance, had to write customized 
+# MySerializer class to get ThreadedComment objects out to be ingested back correctly.
+# Author: Hong Yi
 import os
 
 os.environ.setdefault("PYTHONPATH", '/home/docker/hydroshare')

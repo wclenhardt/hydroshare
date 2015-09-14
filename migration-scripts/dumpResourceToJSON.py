@@ -1,3 +1,6 @@
+# This script dumps all HydroShare resource-relevant data into resource.json to be used to  
+# ingest the auxiliary resource access control data back into new system for manual migration purpose
+# Author: Hong Yi
 import os
 
 os.environ.setdefault("PYTHONPATH", '/home/docker/hydroshare')

@@ -1,3 +1,6 @@
+# usage: python loadThreadedCommentsFromJSON.py threaded_comments.JSON 
+# where threaded_comments.JSON is generated from dumpThreadedCommentsToJSON
+# Author: Hong Yi
 import os
 import sys
 import json

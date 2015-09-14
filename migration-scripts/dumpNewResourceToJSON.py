@@ -1,3 +1,7 @@
+# This script dumps HydroShare resource uuid to primary id mapping into new_resources.json to be used   
+# to ingest the auxiliary resource data back into new system for manual migration purpose. This script 
+# should be run in the new system to be migrated to.
+# Author: Hong Yi
 import os
 
 os.environ.setdefault("PYTHONPATH", '/home/docker/hydroshare')

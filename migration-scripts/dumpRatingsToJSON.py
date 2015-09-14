@@ -1,3 +1,6 @@
+# This script dumps HydroShare Rating table into rating.json to be used to  
+# ingest the rating data back into new system for manual migration purpose
+# Author: Hong Yi
 import os
 
 os.environ.setdefault("PYTHONPATH", '/home/docker/hydroshare')
