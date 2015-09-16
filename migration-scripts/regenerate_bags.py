@@ -1,5 +1,7 @@
 # This script should run after iinit is executed with irods_environment set up to use 
 # HydroShare iRODS proxy user home directory where HydroShare resources are stored.
+# The irods rule file ruleGenerateBagIt_HS.r also needs to resides in the same directory  
+# as this script so that it can be invoked to run from the script
 # Functionality: regenerate bags for all HydroShare resources and then set bag_modified 
 #                metadata (AVU) to false for all resources stored in iRODS 
 # Usage: python regenerate_bags.py <IRODS_DEFAULT_RESOURCE>
