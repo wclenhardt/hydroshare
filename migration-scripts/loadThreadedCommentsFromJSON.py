@@ -17,4 +17,4 @@ django.setup()
 with open(sys.argv[1]) as json_file:
     for obj in serializers.deserialize("json", json_file):
         obj.save()
-
+    json_file.close()

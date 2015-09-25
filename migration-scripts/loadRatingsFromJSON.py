@@ -29,4 +29,4 @@ with open(sys.argv[1]) as json_file:
         short_id = id_to_short_id[rating.object.object_pk]
         rating.object.object_pk = short_id_to_id[short_id]
         rating.save()
-
+    json_file.close()

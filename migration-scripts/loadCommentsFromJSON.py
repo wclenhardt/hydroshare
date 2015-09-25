@@ -29,4 +29,4 @@ with open(sys.argv[1]) as json_file:
         short_id = id_to_short_id[comment.object.object_pk]
         comment.object.object_pk = short_id_to_id[short_id]
         comment.save()
-
+    json_file.close()

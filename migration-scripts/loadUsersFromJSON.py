@@ -18,6 +18,7 @@ django.setup()
 with open(sys.argv[1]) as json_file:
     for user in serializers.deserialize("json", json_file):
         user.save()
+    json_file.close()
 from hs_access_control.models import UserAccess
 UserAccess.objects.all().delete()
 for u in User.objects.all():
