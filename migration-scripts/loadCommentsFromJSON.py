@@ -11,10 +11,14 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'hydroshare.settings'
 
 import django
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 
 django.setup()
 
+from hs_core import hydroshare
+
 id_to_short_id = {}
+short_id_to_comment = {}
 
 with open(sys.argv[2]) as old_res_file:
     # cannot use django serializers.deserialize("json", old_res_file) since the new resource model
@@ -25,7 +29,11 @@ with open(sys.argv[2]) as old_res_file:
         res_id = str(item["pk"])
         res_short_id = item["fields"]["short_id"]
         id_to_short_id[res_id] = res_short_id
+        comment_cnt = item["fields"]["comments_count"]
+        if comment_cnt > 0:
+            short_id_to_comment[res_short_id] = comment_cnt
     old_res_file.close()
+    print short_id_to_comment
 
 short_id_to_id = {}
 with open(sys.argv[3]) as new_res_file:
@@ -37,8 +45,26 @@ with open(sys.argv[1]) as json_file:
         try:
             short_id = id_to_short_id[comment.object.object_pk]
             comment.object.object_pk = short_id_to_id[short_id]
+            # the old model content_type_id is 61 pointing to content type ("hs_core", "genericresource").
+            # It needs to be changed to 134 pointing to ("hs_core", "baseresource") in order for comments
+            # to work since comments are tied to BaseResource model
+            comment.object.content_type_id = 134
             comment.save()
+
         except KeyError as ex:
             print ex.message
             continue
     json_file.close()
+
+# save comment-related attributes to new resources
+for rid in short_id_to_comment:
+    try:
+       res = hydroshare.utils.get_resource_by_shortkey(rid, or_404=False)
+       res.comments_count = short_id_to_comment[rid]
+       print rid
+       print res.comments_count
+       res.save()
+    except ObjectDoesNotExist:
+       print "No resource was found for resource id:%s" % rid
+       continue
+
