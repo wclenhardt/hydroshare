@@ -30,7 +30,7 @@ refts_res_objs = list(RefTimeSeries.objects.all())
 tool_res_objs = list(ToolResource.objects.all())
 
 all_objs = generic_res_objs + netcdf_res_objs + raster_res_objs + timeseries_res_objs + mi_res_objs + mp_res_objs + refts_res_objs + tool_res_objs
-data = serializers.serialize("json", all_objs, fields=('short_id'), indent=4)
+data = serializers.serialize("json", all_objs, fields=('short_id', 'resource_type'), indent=4)
 out = open("new_resources.json", "w")
 
 out.write(data)
