@@ -41,8 +41,11 @@ with open(sys.argv[1]) as old_res_file:
            print "No resource was found for resource id:%s" % res_id
            continue
 
-        res.raccess.public = item["fields"]["public"]
-        res.raccess.save()
+        isPublic = item["fields"]["public"]
+        if isPublic:
+            res.raccess.public = True
+            res.raccess.discoverable = True
+            res.raccess.save()
 
         res_creator = res.creator
 
