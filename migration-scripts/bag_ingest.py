@@ -19,6 +19,7 @@ for(dirpath, dirnames, filenames) in os.walk(sys.argv[1]):
 # print content_path_list
 
 from hs_core.serialization import create_resource_from_bag
+from hs_core.hydroshare.hs_bagit import create_bag_files
 
 dep_res_meta = []
 dep_res = []
@@ -35,6 +36,7 @@ for content_path in content_path_list:
 for i in range(0, len(dep_res_meta)):
     try:
         dep_res_meta[i].write_metadata_to_resource(dep_res[i])
+        create_bag_files(dep_res[i])
     except Exception as ex:
         print ex.message
         continue
