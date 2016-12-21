@@ -8,7 +8,7 @@
 <dom-module id="hydroshare-app">
   <template>
     <app-location route="{{ route }}"></app-location>
-    <app-route route="{{ route }}" pattern="/:page" data="{{ routeData }}"></app-route>
+    <app-route route="{{ route }}" pattern="/:page" data="{{ routeData }}" tail="{{ tail }}"></app-route>
 
     <iron-pages attr-for-selected="name" selected="{{ routeData.page }}">
       <hydroshare-my-resources name="my-resources"></hydroshare-my-resources>
@@ -40,9 +40,10 @@
         if(this.initialRoute === "NONE") this.set('initialRoute', page);
 
         if((this.initialRoute !== page) && (this.spa_pages.indexOf(page) === -1 || page === "")) {
-          window.location = '/' + page;
+          window.location = window.location.pathname;
         } else if(page !== "" && this.spa_pages.indexOf(page) > -1) {
           this.importHref("/static/components/hydroshare-" + page + ".html", null, this._showPage404, true);
+          document.getElementsByTagName('title')[0].innerHTML = "My Resources | Hydroshare";
 
           if(document.querySelector("#nonspa")) {
             document.querySelector("#nonspa").remove();

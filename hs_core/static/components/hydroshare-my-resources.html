@@ -145,7 +145,7 @@
             </div>
 
             <!-- /input-group -->
-            <table id="item-selectors" class="table-hover table-striped resource-custom-table">
+            <table id="item-selectors" style="display: table;" class="table-hover table-striped resource-custom-table">
                 <thead>
                 <tr>
                     <th><input class="all-rows-selector" type="checkbox"></th>
@@ -165,120 +165,63 @@
                 </tr>
                 </thead>
                 <tbody>
-                    {% for res in collection %}
+                    <template is="dom-repeat" items="{{ resources }}">
                         <tr data-tr-index="{{ forloop.counter0 }}">
                             <td>
                                 <input class="row-selector" type="checkbox">
-                                {% if res.is_favorite %}
-                                    <span data-form-id="form-favorite-{{ res.short_id }}" data-form-type="toggle-favorite"
+                                <template is="dom-if" if="{{ item.is_favorite }}">
+                                    <span data-form-id="form-favorite-{{ item.short_id }}" data-form-type="toggle-favorite"
                                           class="glyphicon glyphicon-star btn-inline-favorite isfavorite"></span>
 
-                                    <form class="hidden-form" data-id="form-favorite-{{ res.short_id }}"
-                                          action="/hsapi/_internal/{{ res.short_id }}/label-resource-action/"
+                                    <form class="hidden-form" data-id="form-favorite-{{ item.short_id }}"
+                                          action="/hsapi/_internal/{{ item.short_id }}/label-resource-action/"
                                           method="post">
-                                        {% csrf_token %}
+                                        <input type="hidden" name="csrfmiddlewaretoken" value$="{{ hydroshare_globals.csrf_token }}">
                                         <input type="hidden" name="action" value="DELETE">
                                         <input type="hidden" name="label_type" value="FAVORITE">
                                     </form>
-                                {% else %}
-                                    <span data-form-id="form-favorite-{{ res.short_id }}" data-form-type="toggle-favorite"
+                                </template>
+                                <template is="dom-if" if="{{ !item.is_favorite }}">
+                                    <span data-form-id="form-favorite-{{ item.short_id }}" data-form-type="toggle-favorite"
                                           class="glyphicon glyphicon-star btn-inline-favorite"></span>
 
-                                    <form class="hidden-form" data-id="form-favorite-{{ res.short_id }}"
-                                          action="/hsapi/_internal/{{ res.short_id }}/label-resource-action/"
+                                    <form class="hidden-form" data-id="form-favorite-{{ item.short_id }}"
+                                          action="/hsapi/_internal/{{ item.short_id }}/label-resource-action/"
                                           method="post">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value$="{{ hydroshare_globals.csrf_token }}">
                                         <input type="hidden" name="action" value="CREATE">
                                         <input type="hidden" name="label_type" value="FAVORITE">
                                     </form>
-                                {% endif %}
+                                </template>
 
                                 <span class="glyphicon glyphicon-tag btn-inline-label" data-toggle="dropdown" aria-expanded="false"></span>
 
                                 <div class="dropdown-menu inline-dropdown" role="menu">
                                     <div class="panel-body" role="form">
-                                        <ul data-resource-id="{{ res.short_id }}" class="list-group list-labels">
+                                        <ul data-resource-id="{{ item.short_id }}" class="list-group list-labels">
                                         </ul>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="resource-type-text">{{ res|resource_type }}</span>
-                                {% if res|resource_type == "Generic" %}
-                                    <img src="/static/img/resource-icons/generic48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Geographic Raster" %}
-                                    <img src="/static/img/resource-icons/geographicraster48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Model Program Resource" %}
-                                    <img src="/static/img/resource-icons/modelprogram48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Model Instance Resource" %}
-                                    <img src="/static/img/resource-icons/modelinstance48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "SWAT Model Instance Resource" %}
-                                    <img src="/static/img/resource-icons/swat48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Multidimensional (NetCDF)" %}
-                                    <img src="/static/img/resource-icons/multidimensional48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Time Series" %}
-                                    <img src="/static/img/resource-icons/timeseries48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Geographic Feature (ESRI Shapefiles)" %}
-                                    <img src="/static/img/resource-icons/geographicfeature48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Web App Resource" %}
-                                    <img src="/static/img/resource-icons/webapp48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "HIS Referenced Time Series" %}
-                                    <img src="/static/img/resource-icons/his48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Script Resource" %}
-                                    <img src="/static/img/resource-icons/script48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}" class="table-res-type-icon"/>
-                                {% elif res|resource_type == "Collection Resource" %}
-                                    <img src="/static/img/resource-icons/collection48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}"
-                                         class="table-res-type-icon"/>
-                                {% elif res|resource_type == "MODFLOW Model Instance Resource" %}
-                                    <img src="/static/img/resource-icons/modflow48x48.png"
-                                         alt="{{ res|resource_type }}" title="{{ res|resource_type }}"
-                                         class="table-res-type-icon"/>
-                                {% endif %}
+                                <span class="resource-type-text">{{ item.resource_type }}</span>
+                                <img src="{{ _getResourceTypeImage(item.resource_type) }}"
+                                     alt="{{ item.resource_type }}"
+                                     title="{{ item.resource_type }}"
+                                     class="table-res-type-icon"/>
 
                                 <div class="access-icon-wrapper">
-                                    {% if res.raccess.published %}
-                                        <img src="/static/img/published.png"
-                                             alt="Published Resource" title="Published"/>
-                                    {% elif res.raccess.public %}
-                                        <img src="/static/img/public.png"
-                                             alt="Public Resource" title="Public"/>
-                                    {% elif res.raccess.discoverable %}
-                                        <img src="/static/img/discoverable.png"
-                                             alt="Discoverable Resource" title="Discoverable"/>
-                                    {% else %}
-                                        <img src="/static/img/private.png"
-                                             alt="Private Resource" title="Private"/>
-                                    {% endif %}
+                                    <img src="{{ _getResourceAccessIcon(item) }}"
+                                         alt="Published Resource"
+                                         title="Published"/>
 
-                                    {% if res.raccess.published %}
-                                        {% if "pending" in cm.doi or "failure" in cm.doi %}
-                                            <img src="/static/img/pending.png" alt="Pending Publication"
-                                                 title="Pending Publication. Note that the DOI will not be available until it has been registered and activated."/>
-                                        {% endif %}
-                                    {% else %}
-                                        {% if res.raccess.shareable %}
-                                            <img src="/static/img/shareable.png" alt="Sharable Resource"
-                                                 title="Shareable"/>
-                                        {% else %}
-                                            <img src="/static/img/non-shareable.png" alt="Non Sharable Resource"
-                                                 title="Not Shareable"/>
-                                        {% endif %}
-                                    {% endif %}
+                                    <img src="{{ _getResourceStatusIcon(item) }}"
+                                         alt="Pending Publication"
+                                         title="Pending Publication. Note that the DOI will not be available until it has been registered and activated."/>
                                 </div>
                             </td>
                             <td>
-                                <strong><a href="{{ res.get_absolute_url }}">{{ res.metadata.title }}</a></strong>
+                                <strong><a href="{{ item.resource_url }}">{{ item.resource_title }}</a></strong>
                             </td>
                             {% if res.first_creator.description %}
                                 <td>
@@ -338,7 +281,7 @@
                             <td>{{ res.created|date:"Y/m/d H:i:s" }}</td>
 
                         </tr>
-                    {% endfor %}
+                    </template>
                 </tbody>
             </table>
 
@@ -536,7 +479,81 @@
   <script type="text/javascript" src="/static/js/hs_resource_table.js"></script> -->
   <script>
     Polymer({
-      is: "hydroshare-my-resources"
+      is: "hydroshare-my-resources",
+
+      properties: {
+        resourceTypeImageMap: {
+          type: Object,
+          value: {
+            "Generic": "/static/img/resource-icons/generic48x48.png",
+            "GenericResource": "/static/img/resource-icons/generic48x48.png",
+            "Geographic Raster": "/static/img/resource-icons/geographicraster48x48.png",
+            "Model Program Resource": "/static/img/resource-icons/modelprogram48x48.png",
+            "Model Instance Resource": "/static/img/resource-icons/modelinstance48x48.png",
+            "SWAT Model Instance Resource": "/static/img/resource-icons/swat48x48.png",
+            "Multidimensional (NetCDF)": "/static/img/resource-icons/multidimensional48x48.png",
+            "Time Series": "/static/img/resource-icons/timeseries48x48.png",
+            "Geographic Feature (ESRI Shapefiles)": "/static/img/resource-icons/geographicfeature48x48.png",
+            "Web App Resource": "/static/img/resource-icons/webapp48x48.png",
+            "HIS Referenced Time Series": "/static/img/resource-icons/his48x48.png",
+            "Script Resource": "/static/img/resource-icons/script48x48.png",
+            "Collection Resource": "/static/img/resource-icons/collection48x48.png",
+            "MODFLOW Model Instance Resource": "/static/img/resource-icons/modflow48x48.png"
+          }
+        },
+        resourceAccessIconMap: {
+          type: Object,
+          value: {
+            "published": "/static/img/published.png",
+            "public": "/static/img/public.png",
+            "discoverable": "/static/img/discoverable.png",
+            "private": "/static/img/private.png"
+          }
+        }
+      },
+
+      _getResourceTypeImage: function(type) { return this.resourceTypeImageMap[type]; },
+
+      _getResourceAccessIcon: function(resource) {
+        if(resource.public) return this.resourceAccessIconMap["public"];
+        if(resource.published) return this.resourceAccessIconMap["published"];
+        if(resource.discoverable) return this.resourceAccessIconMap["discoverable"];
+
+        return this.resourceAccessIconMap["public"];
+      },
+
+      _getResourceStatusIcon: function(resource) {
+        /*
+          if "pending" in cm.doi or "failure" in cm.doi %}
+          <img src="/static/img/pending.png" alt="Pending Publication"
+                title="Pending Publication. Note that the DOI will not be available until it has been registered and activated."/>
+          endif %}
+          else %}
+          if res.raccess.shareable %}
+                  <img src="/static/img/shareable.png" alt="Sharable Resource"
+                       title="Shareable"/>
+              else %}
+                  <img src="/static/img/non-shareable.png" alt="Non Sharable Resource"
+                       title="Not Shareable"/>
+              endif %}
+          endif %}
+        */
+
+        return "/static/img/pending.png";
+      },
+
+      ready: function() {
+        var api = document.getElementById('api');
+        api.getResources();
+
+        api.addEventListener("api-response", (function(e) {
+          if(!e.detail.response) return;
+
+          console.log(e.detail.response.results);
+          this.resources = e.detail.response.results;
+          //this.ownerCount = this.resources.
+        }).bind(this));
+      }
     })
   </script>
 </dom-module>

@@ -87,6 +87,7 @@ class ResourceListItemSerializer(serializers.Serializer):
     resource_title = serializers.CharField(max_length=200)
     resource_id = serializers.CharField(max_length=100)
     creator = serializers.CharField(max_length=100)
+    creator_id = serializers.IntegerField()
     date_created = serializers.DateTimeField(format='%m-%d-%Y')
     date_last_updated = serializers.DateTimeField(format='%m-%d-%Y')
     public = serializers.BooleanField()
@@ -116,6 +117,7 @@ ResourceListItem = namedtuple('ResourceListItem',
                                'resource_id',
                                'resource_title',
                                'creator',
+                               'creator_id',
                                'public',
                                'discoverable',
                                'shareable',

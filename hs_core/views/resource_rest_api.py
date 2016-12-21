@@ -48,6 +48,7 @@ class ResourceToListItemMixin(object):
                                                           resource_id=r.short_id,
                                                           resource_title=r.metadata.title.value,
                                                           creator=r.first_creator.name,
+                                                          creator_id=r.first_creator.id,
                                                           public=r.raccess.public,
                                                           discoverable=r.raccess.discoverable,
                                                           shareable=r.raccess.shareable,
