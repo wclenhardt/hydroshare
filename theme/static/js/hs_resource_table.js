@@ -189,7 +189,9 @@ function label_ajax_submit() {
                     createLabel();
                 }
                 else if (formType == "delete-label") {
-                    var deletedLabel = el.attr("data-label");
+                    var deletedLabel = el.
+
+                    attr("data-label");
                     $("#table-user-labels td[data-label='" + deletedLabel + "']").parent().remove();
                     if ($("#table-user-labels .user-label").length == 0 && $("#table-user-labels .no-items-found").length == 0) {
                         $("#table-user-labels tbody").append(
@@ -278,6 +280,7 @@ function updateLabelLists() {
     $(".btn-inline-label").removeClass("has-labels");
 
     var labels = $("#table-user-labels td.user-label");
+    console.log(labels);
     for (var h = 0; h < labels.length; h++) {
         var curr = $(labels[h]).text();
 

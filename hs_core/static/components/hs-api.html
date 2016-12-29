@@ -2,13 +2,12 @@
 <link href="http://polygit.org/components/iron-ajax/iron-ajax.html" rel="import" />
 
 
-<dom-module id="hydroshare-api">
+<dom-module id="hs-api">
   <template>
     <style></style>
 
     <iron-ajax
         id="ajax"
-        url="https://www.googleapis.com/youtube/v3/search"
         handle-as="json"
         on-response="handleResponse"
         debounce-duration="300">
@@ -17,16 +16,18 @@
 
   <script>
     Polymer({
-      is: "hydroshare-api",
+      is: "hs-api",
 
       handleResponse: function() {
         this.fire("api-response", { response: this.$.ajax.lastResponse });
       },
 
-      getResources: function() {
-        this.$.ajax.url = "/hsapi/resourceList/";
+      get: function(url) {
+        this.$.ajax.url = url;
         this.$.ajax.generateRequest();
       },
+
+      getResources: function() { this.get("/hsapi/resourceList/"); },
 
       ready: function() {
         this.getResources();

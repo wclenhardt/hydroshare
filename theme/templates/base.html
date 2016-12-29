@@ -111,11 +111,11 @@
       // }
     </script>
 
-    <link rel="import" href="{% static "components/hydroshare-app.html" %}">
-    <link rel="import" href="{% static "components/hydroshare-api.html" %}">
+    <link rel="import" href="{% static "components/hs-app.html" %}">
+    <link rel="import" href="{% static "components/hs-api.html" %}">
 </head>
 <body id="{% block body_id %}body{% endblock %}">
-    <hydroshare-api id="api"></hydroshare-api>
+    <hs-api id="api"></hs-api>
 <!-- Navbar
     ============= -->
     <div id="hs-nav-bar" class="navbar navbar-inverse navbar-fixed-top">
@@ -226,7 +226,7 @@
 
     {% block all_content %}
         <div class="main-container">
-          <hydroshare-app></hydroshare-app>
+          <hs-app></hs-app>
           <div id="nonspa">
             {% block main %}{% endblock %}
             {% block after_main %}{% endblock %}

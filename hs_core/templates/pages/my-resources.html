@@ -463,7 +463,7 @@
 
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_js %}{% comment %}
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.10/js/jquery.dataTables.js"></script>
     <script>
@@ -545,5 +545,6 @@
         ];
     </script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/hs_resource_table.js"></script>
+  {% endcomment %}
 {% endblock %}
 
