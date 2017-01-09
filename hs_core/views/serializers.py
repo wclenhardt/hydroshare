@@ -81,20 +81,26 @@ class ResourceListRequestValidator(serializers.Serializer):
     published = serializers.BooleanField(required=False, default=False)
     type = serializers.MultipleChoiceField(choices=RESOURCE_TYPES, required=False, default=None)
 
+class ResourceAccessSerializer(serializers.Serializer):
+    active = serializers.BooleanField()
+    discoverable = serializers.BooleanField()
+    public = serializers.BooleanField()
+    shareable = serializers.BooleanField()
+    published = serializers.BooleanField()
+    immutable = serializers.BooleanField()
 
 class ResourceListItemSerializer(serializers.Serializer):
     resource_type = serializers.CharField(max_length=100)
     resource_title = serializers.CharField(max_length=200)
     resource_id = serializers.CharField(max_length=100)
+    access = ResourceAccessSerializer()
     creator = serializers.CharField(max_length=100)
-    creator_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
     date_created = serializers.DateTimeField(format='%m-%d-%Y')
     date_last_updated = serializers.DateTimeField(format='%m-%d-%Y')
-    public = serializers.BooleanField()
-    discoverable = serializers.BooleanField()
-    shareable = serializers.BooleanField()
-    immutable = serializers.BooleanField()
-    published = serializers.BooleanField()
+    date_created_unix = serializers.IntegerField()
+    date_last_updated_unix = serializers.IntegerField()
+    is_favorite = serializers.BooleanField()
     bag_url = serializers.URLField()
     science_metadata_url = serializers.URLField()
     resource_map_url = serializers.URLField()
@@ -117,15 +123,15 @@ ResourceListItem = namedtuple('ResourceListItem',
                                'resource_id',
                                'resource_title',
                                'creator',
-                               'creator_id',
-                               'public',
-                               'discoverable',
-                               'shareable',
-                               'immutable',
-                               'published',
+                               'user_id',
+                               'access',
+                               'is_favorite',
                                'date_created',
+                               'date_created_unix',
                                'date_last_updated',
+                               'date_last_updated_unix',
                                'bag_url',
+                               'labels',
                                'science_metadata_url',
                                'resource_map_url',
                                'resource_url'])

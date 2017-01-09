@@ -77,7 +77,6 @@ $(document).ready(function () {
     $("#item-selectors").show();
 
     // Bind ajax submit events to favorite and label buttons
-    $(".btn-inline-favorite").click(label_ajax_submit);
     $(".btn-label-remove").click(label_ajax_submit);
     $("#btn-create-label").click(label_ajax_submit);
 
@@ -144,18 +143,6 @@ $(document).ready(function () {
         // If none was checked it means we are unchecking all
         if (checkedSome == false) {
             stars.click();
-        }
-    });
-
-    $("#item-selectors td").click(function(e){
-        if (e.target.tagName != "TD") {
-            return;
-        }
-        if ($(this).parent().find("input[type='checkbox']:checked.row-selector").length > 0) {
-            $(this).parent().find("input[type='checkbox'].row-selector").prop("checked", false);
-        }
-        else {
-            $(this).parent().find("input[type='checkbox'].row-selector").prop("checked", true);
         }
     });
 

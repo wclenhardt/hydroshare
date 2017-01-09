@@ -5,6 +5,7 @@ import tempfile
 import shutil
 import logging
 import json
+import time
 
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -39,27 +40,32 @@ logger = logging.getLogger(__name__)
 # Mixins
 class ResourceToListItemMixin(object):
     def resourceToResourceListItem(self, r):
+        import sys
+        sys.path.append("/pycharm-debug")
+        import pydevd
+        pydevd.settrace('10.20.1.26', port=21000, suspend=False)
+
         site_url = hydroshare.utils.current_site_url()
         bag_url = site_url + AbstractResource.bag_url(r.short_id)
         science_metadata_url = site_url + reverse('get_update_science_metadata', args=[r.short_id])
         resource_map_url = site_url + reverse('get_resource_map', args=[r.short_id])
         resource_url = site_url + r.get_absolute_url()
-        resource_list_item = serializers.ResourceListItem(resource_type=r.resource_type,
-                                                          resource_id=r.short_id,
-                                                          resource_title=r.metadata.title.value,
-                                                          creator=r.first_creator.name,
-                                                          creator_id=r.first_creator.id,
-                                                          public=r.raccess.public,
-                                                          discoverable=r.raccess.discoverable,
-                                                          shareable=r.raccess.shareable,
-                                                          immutable=r.raccess.immutable,
-                                                          published=r.raccess.published,
-                                                          date_created=r.created,
-                                                          date_last_updated=r.updated,
+        resource_list_item = serializers.ResourceListItem(access=r.raccess,
                                                           bag_url=bag_url,
-                                                          science_metadata_url=science_metadata_url,
+                                                          creator=r.creator,
+                                                          date_created=r.created,
+                                                          date_created_unix=time.mktime(r.created.timetuple()),
+                                                          date_last_updated=r.updated,
+                                                          date_last_updated_unix=time.mktime(r.updated.timetuple()),
+                                                          labels=r.rlabels,
+                                                          is_favorite=False,
+                                                          resource_type=r.resource_type,
+                                                          resource_id=r.short_id,
                                                           resource_map_url=resource_map_url,
-                                                          resource_url=resource_url)
+                                                          resource_title=r.metadata.title.value,
+                                                          resource_url=resource_url,
+                                                          science_metadata_url=science_metadata_url,
+                                                          user_id=r.user_id)
         return resource_list_item
 
 
