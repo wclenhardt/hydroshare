@@ -85,7 +85,7 @@ class FunctionalTestsCases(object):
 
         self.driver.find_element_by_name('username').click()
         self.assertTrue('accounts/login' in self.driver.current_url)
-        self.driver.find_element_by_link_text('join HydroShare').click()
+        self.driver.find_element_by_link_text('join My Health Peace of Mind').click()
         form = self.driver.find_element_by_id('form-signup')
         self.assertTrue(form.is_displayed())
 
