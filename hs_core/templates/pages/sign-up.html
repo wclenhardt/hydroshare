@@ -4,10 +4,14 @@
 
 {% block main %}
     <div class="container">
+         <div class="row">
+            <div class="col-sm-12">
+                <p><h1>Welcome! You are taking the first step toward helping yourself and those who care about you understand what matters to you.</h1></p>
+            </div>
         <div class="row">
             <div class="col-sm-12">
                 {% if user.is_anonymous %}
-                    <h2 class="page-title">Create Your <Profile></Profile></h2>
+                    <h2 class="page-title">Step 1: Create Your Login</h2>
                     <div class="col-sm-6">
                         <!-- signup -->
                         <div class="front-signup js-front-signup">
@@ -17,8 +21,14 @@
                         <!-- signup -->
                     </div>
                 {% else %}
-                    <p>You're already logged in. If you'd like to create a new account, you'll need to log out first.</p>
+                    <p>You're already logged in. If you'd like to create a new profile, you'll need to log out first.</p>
                 {% endif %}
+
+            </div>
+            <div class="col-sm-12">
+                <p><h1>In the next step, you'll tell us a little bit more about yourself.</h1></p>
+                <p></p>
+                <p><h1><a href="http://renci.org/">Click here to take the next step.</a></h1></p> <!--Need to create a page and fix the link down the line.-->
             </div>
         </div>
     </div>
