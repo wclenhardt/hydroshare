@@ -184,3 +184,121 @@ class TestResourceList(HSRESTTestCase):
         self.assertTrue(content['results'][1]['resource_url'].startswith("http://"))
         self.assertTrue(content['results'][1]['resource_url']
                         .endswith(res_tail.format(res_id=app_pid)))
+
+    def test_resource_list_by_keyword(self):
+        gen_res_one = resource.create_resource('GenericResource', self.user, 'Resource 1')
+        gen_res_two = resource.create_resource('GenericResource', self.user, 'Resource 2')
+
+        self.resources_to_delete.append(gen_res_one.short_id)
+        self.resources_to_delete.append(gen_res_two.short_id)
+
+        gen_res_one.metadata.create_element("subject", value="one")
+        gen_res_two.metadata.create_element("subject", value="other")
+
+        response = self.client.get('/hsapi/resource/', {'subject': 'one'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 1)
+
+        response = self.client.get('/hsapi/resource/', {'subject': 'other'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 1)
+
+        response = self.client.get('/hsapi/resource/', {'subject': 'one,other'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 2)
+
+    def test_resource_list_obsolete(self):
+        gen_res_one = resource.create_resource('GenericResource', self.user, 'Resource 1')
+        # make a new version of gen_res_one to make gen_res_one obsolete
+        new_ver_gen_res_one = resource.create_empty_resource(gen_res_one.short_id, self.user)
+
+        new_ver_gen_res_one = resource.create_new_version_resource(gen_res_one,
+                                                                   new_ver_gen_res_one, self.user)
+
+        self.resources_to_delete.append(new_ver_gen_res_one.short_id)
+        self.resources_to_delete.append(gen_res_one.short_id)
+
+        # the default for include_obsolete is False which should NOT return obsoleted resources
+        response = self.client.get('/hsapi/resource/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 1)
+        self.assertEqual(content['results'][0]['resource_id'], new_ver_gen_res_one.short_id)
+
+        # set include_obsolete to True, which should return all resources including obsoleted ones
+        response = self.client.get('/hsapi/resource/', {'include_obsolete': True}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 2)
+
+        result_res_id_list = []
+        result_res_id_list.append(content['results'][0]['resource_id'])
+        result_res_id_list.append(content['results'][1]['resource_id'])
+
+        self.assertIn(new_ver_gen_res_one.short_id, result_res_id_list,
+                      msg='new versioned resource id is not included in returned resource list')
+        self.assertIn(gen_res_one.short_id, result_res_id_list,
+                      msg='obsoleted resource id is not included in returned resource list')
+
+    def test_resource_list_by_bounding_box(self):
+        metadata_dict_one = [{'coverage': {'type': 'box', 'value': {'northlimit': '80',
+                                                                    'eastlimit': '40',
+                                                                    'southlimit': '60',
+                                                                    'westlimit': '20',
+                                                                    'units': 'decimal deg'}}}]
+        gen_res_one = resource.create_resource('GenericResource', self.user, 'Resource 1',
+                                               metadata=metadata_dict_one)
+
+        metadata_dict_two = [{'coverage': {'type': 'box', 'value': {'northlimit': '60',
+                                                                    'eastlimit': '110',
+                                                                    'southlimit': '50',
+                                                                    'westlimit': '90',
+                                                                    'units': 'decimal deg'}}}]
+        gen_res_two = resource.create_resource('GenericResource', self.user, 'Resource 2',
+                                               metadata=metadata_dict_two)
+
+        metadata_dict_two = [{'coverage': {'type': 'point', 'value': {'north': '70',
+                                                                      'east': '70',
+                                                                      'units': 'decimal deg'}}}]
+        gen_res_three = resource.create_resource('GenericResource', self.user, 'Resource 2',
+                                                 metadata=metadata_dict_two)
+
+        self.resources_to_delete.append(gen_res_one.short_id)
+        self.resources_to_delete.append(gen_res_two.short_id)
+        self.resources_to_delete.append(gen_res_three.short_id)
+
+        response = self.client.get('/hsapi/resource/', {'coverage_type': 'box',
+                                                        'north': '70',
+                                                        'east': '50',
+                                                        'south': '50',
+                                                        'west': '30'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 1)
+
+        response = self.client.get('/hsapi/resource/', {'coverage_type': 'box',
+                                                        'north': '70',
+                                                        'east': '120',
+                                                        'south': '40',
+                                                        'west': '100'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 1)
+
+        response = self.client.get('/hsapi/resource/', {'coverage_type': 'box',
+                                                        'north': '90',
+                                                        'east': '140',
+                                                        'south': '30',
+                                                        'west': '0'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content)
+        self.assertEqual(content['count'], 3)
+
+        # Bad coverage has no effect
+        response = self.client.get('/hsapi/resource/', {'coverage_type': 'bad',
+                                                        'nonsensical': '90',
+                                                        'params': '140'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -42,7 +42,6 @@ function label_ajax_submit() {
     return false;
 }
 
-
 function shareable_ajax_submit(event) {
     var form = $(this).closest("form");
     var datastring = form.serialize();
@@ -50,7 +49,6 @@ function shareable_ajax_submit(event) {
     var element = $(this);
     var action = $(this).closest("form").find("input[name='t']").val();
     element.attr("disabled", true);
-
 
     $.ajax({
         type: "POST",
@@ -128,6 +126,97 @@ function unshare_resource_ajax_submit(form_id, check_for_prompt, remove_permissi
     //don't submit the form
     return false;
 }
+
+function undo_share_ajax_submit(form_id) {
+    $form = $('#' + form_id);
+    var datastring = $form.serialize();
+    var url = $form.attr('action');
+    setPointerEvents(false);
+    $form.parent().closest("tr").addClass("loading");
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        dataType: 'html',
+        data: datastring,
+        success: function (result) {
+            var json_response;
+            var divInvite = $("#div-invite-people");
+
+            try {
+                json_response = JSON.parse(result);
+            }
+            catch (err) {
+                console.log(err.message);
+                // Remove previous alerts
+                divInvite.find(".label-danger").remove();
+
+                // Append new error message
+                divInvite.append("<span class='label label-danger'>" +
+                    "<strong>Error: </strong>Failed to undo action.</span>");
+
+                $form.parent().closest("tr").removeClass("loading");
+                setPointerEvents(true);
+                return;
+            }
+
+            if (json_response.status == "success") {
+                // Set the new permission level in the interface
+                var userRoles = $form.closest("tr").find(".user-roles");
+
+                userRoles.find("li").removeClass("active");
+
+                if (json_response.undo_user_privilege == "view" || json_response.undo_group_privilege == "view") {
+                    userRoles.find(".dropdown-toggle").text("Can view");
+                    userRoles.find("li[data-access-type='" + "Can view"
+                        + "']").addClass("active");
+                }
+                else if (json_response.undo_user_privilege == "change" || json_response.undo_group_privilege == "change") {
+                    userRoles.find(".dropdown-toggle").text("Can edit");
+                    userRoles.find("li[data-access-type='" + "Can edit"
+                        + "']").addClass("active");
+                }
+                else if (json_response.undo_user_privilege == "owner" || json_response.undo_group_privilege == "owner") {
+                    userRoles.find(".dropdown-toggle").text("Is owner");
+                    userRoles.find("li[data-access-type='" + "Is owner"
+                        + "']").addClass("active");
+                }
+                else {
+                    // The item has no other permission. Remove it.
+                    $form.parent().closest("tr").remove();
+                    setPointerEvents(true);
+                    return;
+                }
+
+                ownersConstrain();
+
+                userRoles.find(".dropdown-toggle").append(" <span class='caret'></span>");
+                $(".role-dropdown").removeClass("open");
+                $form.toggleClass("hidden", true);
+            }
+            else {
+                // An error occurred
+                divInvite.find(".label-danger").remove(); // Remove previous alerts
+
+                divInvite.append("<span class='label label-danger'><strong>Error: </strong>"
+                    + json_response.message + "</span>");
+
+                $form.parent().closest("tr").removeClass("loading");
+            }
+
+            $form.parent().closest("tr").removeClass("loading");
+            setPointerEvents(true);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown){
+            $("#div-invite-people").find(".label-danger").remove(); // Remove previous alerts
+            $("#div-invite-people").append("<span class='label label-danger'><strong>Error: </strong>" + errorThrown + "</span>");
+            setPointerEvents(true);
+        }
+    });
+    //don't submit the form
+    return false;
+}
+
 function showWaitDialog(){
     // display wait for the process to complete dialog
     return $("#wait-to-complete").dialog({
@@ -209,24 +298,43 @@ function change_share_permission_ajax_submit(form_id) {
             $("#div-invite-people").find(".label-danger").remove(); // Remove previous alerts
             json_response = JSON.parse(result);
 
-            if (json_response.status == "success") {
-                $form.parent().closest(".user-roles").find(".dropdown-toggle").text($form.attr("data-access-type"));
-                $form.parent().closest(".user-roles").find(".dropdown-toggle").append(" <span class='caret'></span>");
-                $form.parent().closest(".user-roles").find("li").removeClass("active");
+            try {
+                json_response = JSON.parse(result);
+            }
+            catch (err) {
+                console.log(err.message);
+                // Remove previous alerts
+                $("#div-invite-people").find(".label-danger").remove();
 
-                $form.parent().closest(".user-roles").find("li[data-access-type='" + $form.attr("data-access-type") + "']").addClass("active");
+                // Append new error message
+                $("#div-invite-people").append("<span class='label label-danger'>" +
+                    "<strong>Error: </strong>Failed to change permission.</span>");
+
+                $form.parent().closest("tr").removeClass("loading");
+                setPointerEvents(true);
+                return;
+            }
+
+            var userRoles = $form.parent().closest(".user-roles");
+
+            if (json_response.status == "success") {
+                userRoles.find(".dropdown-toggle").text($form.attr("data-access-type"));
+                userRoles.find(".dropdown-toggle").append(" <span class='caret'></span>");
+                userRoles.find("li").removeClass("active");
+
+                userRoles.find("li[data-access-type='" + $form.attr("data-access-type")
+                    + "']").addClass("active");
                 $(".role-dropdown").removeClass("open");
-                $form.parent().closest(".user-roles").find("li").removeClass("loading");
+
+                $form.closest("tr").find(".undo-share-form").toggleClass("hidden", false);
 
                 updateActionsState(json_response.current_user_privilege);
-
-                setPointerEvents(true);
             }
             else if (json_response.status == "error") {
                 $("#div-invite-people").append("<span class='label label-danger'><strong>Error: </strong>" + json_response.error_msg + "</span>");
-                $form.parent().closest(".user-roles").find("li").removeClass("loading");
-                setPointerEvents(true);
             }
+            userRoles.find("li").removeClass("loading");
+            setPointerEvents(true);
         },
         error: function(XMLHttpRequest, textStatus, errorThrown){
             $("#div-invite-people").find(".label-danger").remove(); // Remove previous alerts
@@ -281,11 +389,20 @@ function share_resource_ajax_submit(form_id) {
 
                 // Form actions
                 var unshareUrl;
-                if (shareType == "user"){
-                    unshareUrl = $form.attr('action').replace("share-resource-with-user", "unshare-resource-with-user") + share_with + "/";
+                var undoUrl;
+                if (shareType == "user") {
+                    unshareUrl = $form.attr('action').replace("share-resource-with-user", "unshare-resource-with-user")
+                        + share_with + "/";
+                    undoUrl = rowTemplate.find(".undo-share-form").attr("action") + share_with + "/";
                 }
                 else {
-                    unshareUrl = $form.attr('action').replace("share-resource-with-group", "unshare-resource-with-group") + share_with + "/";
+                    unshareUrl =
+                        $form.attr('action').replace("share-resource-with-group", "unshare-resource-with-group")
+                        + share_with + "/";
+
+                    undoUrl = rowTemplate.find(".undo-share-form").attr("action")
+                            .replace("undo-share-resource-with-user", "undo-share-resource-with-group")
+                        + share_with + "/";
                 }
 
                 var viewUrl = $form.attr('action') + "view" + "/" + share_with + "/";
@@ -294,7 +411,10 @@ function share_resource_ajax_submit(form_id) {
 
                 rowTemplate.find(".remove-user-form").attr('action', unshareUrl);
                 rowTemplate.find(".remove-user-form").attr('id', 'form-remove-user-' + share_with);
-                rowTemplate.find(".remove-user-form .btn-remove-row").attr("data-arg", "form-remove-user-" + share_with);
+
+                rowTemplate.find(".undo-share-form").attr('action', undoUrl);
+                rowTemplate.find(".undo-share-form").attr('id', 'form-undo-share-' + share_with);
+
                 // Set form urls, ids
                 rowTemplate.find(".share-form-view").attr('action', viewUrl);
                 rowTemplate.find(".share-form-view").attr("id", "share-view-" + share_with);
@@ -324,6 +444,7 @@ function share_resource_ajax_submit(form_id) {
                 if (!json_response.is_current_user) {
                     rowTemplate.find(".you-flag").hide();
                 }
+
                 if (shareType == "user") {
                     rowTemplate.find("span[data-col='user-name']").text(json_response.username);
                 }
@@ -359,17 +480,6 @@ function share_resource_ajax_submit(form_id) {
                     rowTemplate.find(".share-form-owner").parent().addClass("active");
                 }
                 $(".access-table tbody").append($("<tr id='row-id-" + share_with + "'>" + rowTemplate.html() + "</tr>"));
-
-                // Rebind events
-                $(".btn-unshare-resource").click(function () {
-                    var formID = $(this).closest("form").attr("id");
-                    unshare_resource_ajax_submit(formID);
-                });
-
-                $(".btn-change-share-permission").click(function () {
-                    var arg = $(this).attr("data-arg");
-                    change_share_permission_ajax_submit(arg);
-                });
 
                 updateActionsState(json_response.current_user_privilege);
             }
@@ -413,8 +523,7 @@ function metadata_update_ajax_submit(form_id){
         dataType: 'html',
         data: datastring,
         async: flagAsync,
-        success: function(result)
-        {
+        success: function(result) {
             /* The div contains now the updated form */
             //$('#' + form_id).html(result);
             json_response = JSON.parse(result);
@@ -447,8 +556,11 @@ function metadata_update_ajax_submit(form_id){
                         var temporalCoverage = json_response.temporal_coverage;
                         updateResourceTemporalCoverage(temporalCoverage);
                     }
-                    var spatialCoverage = json_response.spatial_coverage;
-                    updateResourceSpatialCoverage(spatialCoverage);
+
+                    if (json_response.hasOwnProperty('spatial_coverage')) {
+                        var spatialCoverage = json_response.spatial_coverage;
+                        updateResourceSpatialCoverage(spatialCoverage);
+                    }
                 }
                 if (($form.attr("id") == "id-site")){
                     makeTimeSeriesMetaDataElementFormReadOnly(form_id, "id_site");
@@ -808,6 +920,7 @@ function delete_folder_ajax_submit(res_id, folder_path) {
 // This method is called to refresh the loader with the most recent structure after every other call
 function get_irods_folder_struct_ajax_submit(res_id, store_path) {
     $("#fb-files-container, #fb-files-container").css("cursor", "progress");
+    // TODO: 2105: doesn't return enough information for intelligent decision 
     return $.ajax({
         type: "POST",
         url: '/hsapi/_internal/data-store-structure/',
@@ -950,6 +1063,8 @@ function create_irods_folder_ajax_submit(res_id, folder_path) {
     });
 }
 
+// TODO: #2105: replace with move-to-folder and rename-file-or-folder: 
+// TODO: ambiguous function based upon conflation in REST API
 function move_or_rename_irods_file_or_folder_ajax_submit(res_id, source_path, target_path) {
     $("#fb-files-container, #fb-files-container").css("cursor", "progress");
     return $.ajax({
@@ -972,6 +1087,55 @@ function move_or_rename_irods_file_or_folder_ajax_submit(res_id, source_path, ta
         }
     });
 }
+
+// target_path must be a folder
+function move_to_folder_ajax_submit(res_id, source_paths, target_path) {
+    $("#fb-files-container, #fb-files-container").css("cursor", "progress");
+    return $.ajax({
+        type: "POST",
+        url: '/hsapi/_internal/data-store-move-to-folder/',
+        async: true,
+        data: {
+            res_id: res_id,
+            source_paths: JSON.stringify(source_paths),
+            target_path: target_path
+        },
+        success: function (result) {
+            var target_rel_path = result.target_rel_path;
+            if (target_rel_path.length > 0) {
+                $("#fb-files-container li").removeClass("fb-cutting");
+            }
+        },
+        error: function(xhr, errmsg, err){
+            display_error_message('File/Folder Moving Failed', xhr.responseText);
+        }
+    });
+}
+
+// prefixes must be the same on source_path and target_path 
+function rename_file_or_folder_ajax_submit(res_id, source_path, target_path) {
+    $("#fb-files-container, #fb-files-container").css("cursor", "progress");
+    return $.ajax({
+        type: "POST",
+        url: '/hsapi/_internal/data-store-rename-file-or-folder/',
+        async: true,
+        data: {
+            res_id: res_id,
+            source_path: source_path,
+            target_path: target_path
+        },
+        success: function (result) {
+            var target_rel_path = result.target_rel_path;
+            if (target_rel_path.length > 0) {
+                $("#fb-files-container li").removeClass("fb-cutting");
+            }
+        },
+        error: function(xhr, errmsg, err){
+            display_error_message('File/Folder Renaming Failed', xhr.responseText);
+        }
+    });
+}
+
 function addFileTypeExtraMetadata(){
     $form = $('#add-keyvalue-filetype-metadata');
     var url = $form.attr('action');
@@ -1185,6 +1349,8 @@ function setFileTypeSpatialCoverageFormFields(logical_type){
         $id_type_filetype_div.find("#id_type_1").attr('onclick', 'return false');
         $id_type_filetype_div.find("#id_type_2").attr('onclick', 'return false');
         $id_type_filetype_div.find("#id_type_1").attr('checked', 'checked');
+        $id_type_filetype_div.find("#id_type_2").attr('disabled', true);
+        $id_type_filetype_div.find("#id_type_2").parent().closest("label").addClass("text-muted");
     }
     else {
         // file type is "GenericLogicalFile" - allow changing coverage type
@@ -1210,7 +1376,7 @@ function setFileTypeSpatialCoverageFormFields(logical_type){
         });
     }
 
-    if ($id_type_filetype_div.find("#id_type_1").attr("checked") == "checked"){
+    if ($id_type_filetype_div.find("#id_type_1").attr("checked") == "checked" || logical_type != 'GeoFeatureLogicalFile'){
         // coverage type is box
         $("#id_north_filetype").parent().closest("#div_id_north").hide();
         $("#id_east_filetype").parent().closest("#div_id_east").hide();
@@ -1227,36 +1393,53 @@ function setFileTypeSpatialCoverageFormFields(logical_type){
 // updates the UI spatial coverage elements
 function updateResourceSpatialCoverage(spatialCoverage){
     $("#spatial-coverage-type").val(spatialCoverage.type);
-        if (spatialCoverage.type === 'point'){
-            $("#id_type_2").attr('checked', 'checked');
-            $("#id_north").val(spatialCoverage.north);
-            $("#id_east").val(spatialCoverage.east);
-            $("#div_id_north").show();
-            $("#div_id_east").show();
-            $("#div_id_elevation").show();
-            $("#div_id_northlimit").hide();
-            $("#div_id_eastlimit").hide();
-            $("#div_id_southlimit").hide();
-            $("#div_id_westlimit").hide();
-            $("#div_id_uplimit").hide();
-            $("#div_id_downlimit").hide();
+    var $form = $("#id-coverage-spatial");
+    var form_update_action = $form.attr('action');
+    var res_short_id = form_update_action.split('/')[3];
+    var update_url = "/hsapi/_internal/" + res_short_id + "/coverage/" + spatialCoverage.element_id + "/update-metadata/";
+    $form.attr('action', update_url);
+    var $id_type_div = $("#div_id_type");
+    var $point_radio = $id_type_div.find("#id_type_2");
+    var $box_radio = $id_type_div.find("#id_type_1");
+    if (spatialCoverage.type === 'point') {
+        $point_radio.attr('checked', 'checked');
+        $box_radio.parent().closest("label").addClass("text-muted");
+        $box_radio.attr('disabled', true);
+        $point_radio.parent().closest("label").removeClass("text-muted");
+        $point_radio.attr('disabled', false);
+        $("#id_north").val(spatialCoverage.north);
+        $("#id_east").val(spatialCoverage.east);
+        $("#div_id_north").show();
+        $("#div_id_east").show();
+        $("#div_id_elevation").show();
+        $("#div_id_northlimit").hide();
+        $("#div_id_eastlimit").hide();
+        $("#div_id_southlimit").hide();
+        $("#div_id_westlimit").hide();
+        $("#div_id_uplimit").hide();
+        $("#div_id_downlimit").hide();
+    }
+    else { //coverage type is 'box'
+        $box_radio.attr('checked', 'checked');
+        $point_radio.parent().closest("label").addClass("text-muted");
+        $point_radio.attr('disabled', true);
+        $box_radio.parent().closest("label").removeClass("text-muted");
+        $box_radio.attr('disabled', false);
+        $("#id_eastlimit").val(spatialCoverage.eastlimit);
+        $("#id_northlimit").val(spatialCoverage.northlimit);
+        $("#id_westlimit").val(spatialCoverage.westlimit);
+        $("#id_southlimit").val(spatialCoverage.southlimit);
+        $("#div_id_north").hide();
+        $("#div_id_east").hide();
+        $("#div_id_elevation").hide();
+        $("#div_id_northlimit").show();
+        $("#div_id_eastlimit").show();
+        $("#div_id_southlimit").show();
+        $("#div_id_westlimit").show();
+        $("#div_id_uplimit").show();
+        $("#div_id_downlimit").show();
         }
-        else { //coverage type is 'box'
-            $("#id_type_1").attr('checked', 'checked');
-            $("#id_eastlimit").val(spatialCoverage.eastlimit);
-            $("#id_northlimit").val(spatialCoverage.northlimit);
-            $("#id_westlimit").val(spatialCoverage.westlimit);
-            $("#id_southlimit").val(spatialCoverage.southlimit);
-            $("#div_id_north").hide();
-            $("#div_id_east").hide();
-            $("#div_id_elevation").hide();
-            $("#div_id_northlimit").show();
-            $("#div_id_eastlimit").show();
-            $("#div_id_southlimit").show();
-            $("#div_id_westlimit").show();
-            $("#div_id_uplimit").show();
-            $("#div_id_downlimit").show();
-        }
+    initMap();
 }
 
 // updates the UI temporal coverage elements
@@ -1271,17 +1454,10 @@ function updateResourceTemporalCoverage(temporalCoverage) {
 function setFileTypeMetadataFormsClickHandlers(){
     $("#fileTypeMetaDataTab").find('form').each(function () {
         var formId = $(this).attr('id');
-        if(formId === "add-keyvalue-filetype-metadata"){
-            $(this).find("button.btn-primary").click(function () {
-                addFileTypeExtraMetadata();
-          });
-        }
-        else {
-            if (formId !== "update-netcdf-file" && formId !== "id-keywords-filetype"){
+        if (formId !== "update-netcdf-file" && formId !== "id-keywords-filetype" && formId !== "add-keyvalue-filetype-metadata") {
               $(this).find("button.btn-primary").click(function () {
                 metadata_update_ajax_submit(formId);
               });
-            }
         }
     });
     BindKeyValueFileTypeClickHandlers();
